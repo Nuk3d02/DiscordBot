@@ -1,0 +1,12 @@
+{
+  "name": "discordbot",
+  "version": "0.0.1",
+  "description": "A Discord Bot",
+  "main": "index.js",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/Nuk3d02/DiscordBot.git"
+  },
+  "author": "Nuk3d",
+  "license": "ISC"
+}
