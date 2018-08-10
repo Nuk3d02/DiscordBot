@@ -1,40 +1,67 @@
+const fs = require('fs');
 const Discord = require('discord.js');
 const { prefix, token } = require('./config.json');
 
-
 const client = new Discord.Client();
+client.commands = new Discord.Collection();
+const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+for (const file of commandFiles) {
+    const command = require(`./commands/${file}`);
+    client.commands.set(command.name, command);
+}
+const cooldowns = new Discord.Collection();
 
 client.on('ready', () => {
     console.log('Ready!');
+    client.user.setActivity('Botting');
 });
 
 client.on('message', message => {
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
 	const args = message.content.slice(prefix.length).split(/ +/);
-	const command = args.shift().toLowerCase();
+	const commandName = args.shift().toLowerCase();
 
-	/*if (message.content === `${prefix}ping`) {
-    	// send back "Pong." to the channel the message was sent in
-    	message.channel.send('Pong.');
+	const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases.includes(commandName));
+	if (!command) return;
+	if (command.guildOnly && message.channel.type !== 'text') {
+    	return message.reply('I can\'t execute that command inside DMs!');
 	}
-	else if (message.content === `${prefix}beep`) {
-		message.channel.send('Boop');
-	}*/
-	if (command === 'ping') {
-		message.reply('Pong');
+	if (command.args && !args.length) {
+        let reply = `Wrong usage.`;
+        if (command.usage) {
+        	reply += `\nPlease use \`${prefix}${command.name} ${command.usage}\``
+        }
+        return message.reply(reply);
+    }
+
+    if (!cooldowns.has(command.name)) {
+    	cooldowns.set(command.name, new Discord.Collection());
+    }
+
+    const now = Date.now();
+    const timestamps = cooldowns.get(command.name);
+    const cooldownAmount = (command.cooldown || 3) * 1000;
+
+    if (!timestamps.has(message.author.id)) {
+    	timestamps.set(message.author.id, now);
+    	setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+    }
+    else {
+    	const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+    	if (now < expirationTime) {
+    		const timeLeft = (expirationTime - now) / 1000;
+    		return message.reply(`Please wait ${timeLeft.toFixed(1)} second(s) before using the \`${command.name}\` command again.`);
+    	}
+    	timestamps.set(message.author.id, now);
+    	setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
+    }
+	try {
+		command.execute(message, args);
 	}
-	else if (command === 'beep') {
-		message.reply('Boop');
-	}
-	else if (command === 'args-info') {
-		if (!args.length) {
-		return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
-		}
-		else if (args[0] === 'foo') {
-			return message.channel.send('bar');
-		}
-		message.channel.send(`First argument: ${args[0]}`);
+	catch (error) {
+		console.error(error);
+		message.reply('There was an error trying to execute that command.');
 	}
     //console.log(message.content);
 });
