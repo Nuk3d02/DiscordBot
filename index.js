@@ -13,16 +13,18 @@ const cooldowns = new Discord.Collection();
 
 client.on('ready', () => {
     console.log('Ready!');
-    client.user.setActivity('Botting');
+    client.user.setActivity('Bots!', { type: 'LISTENING' });
 });
 
-client.on('message', message => {
+client.on('message', async message => {
 	if (!message.content.startsWith(prefix) || message.author.bot) return;
 
 	const args = message.content.slice(prefix.length).split(/ +/);
 	const commandName = args.shift().toLowerCase();
 
-	const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases.includes(commandName));
+	const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+
+
 	if (!command) return;
 	if (command.guildOnly && message.channel.type !== 'text') {
     	return message.reply('I can\'t execute that command inside DMs!');
