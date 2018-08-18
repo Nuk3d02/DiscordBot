@@ -4,9 +4,20 @@
   "description": "A Discord Bot",
   "main": "index.js",
   "repository": {
-      "type": "git",
-      "url": "https://github.com/Nuk3d02/DiscordBot.git"
+    "type": "git",
+    "url": "https://github.com/Nuk3d02/DiscordBot.git"
   },
   "author": "Nuk3d",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "bufferutil": "^3.0.5",
+    "discord.js": "^11.4.2",
+    "erlpack": "github:discordapp/erlpack",
+    "libsodium-wrappers": "^0.7.3",
+    "node-opus": "^0.2.9",
+    "opusscript": "0.0.6",
+    "sequelize": "^4.38.0",
+    "sqlite3": "^4.0.2",
+    "uws": "^9.148.0"
+  }
 }
